@@ -1,0 +1,22 @@
+# TAU-PARK FastAPI Backend Dependencies
+
+# Web framework & server
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# Database (async PostgreSQL)
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+
+# Data validation & settings
+pydantic[email]==2.10.4
+pydantic-settings==2.7.0
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.19
+
+# Utilities
+python-dotenv==1.0.1

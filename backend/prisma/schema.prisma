@@ -1,0 +1,63 @@
+// This file defines the PostgreSQL data model for the TAU-PARK reservation system.
+// It utilizes Prisma ORM to ensure type safety and consistent data structures
+// across the backend services.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Represents a system user, including both standard guests and administrative staff.
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  phone     String    @unique
+  password  String    // Hashed credentials stored via bcrypt
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+/// A glamping accommodation unit available for booking at TAU-PARK.
+/// Houses have fixed capacity and a per-night price in Kazakhstani Tenge (KZT).
+model House {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String
+  price       Int       // Per-night price in KZT (tenge)
+  capacity    Int       // Maximum number of guests
+  images      String[]  // Array of image URLs
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+}
+
+/// Stores reservation records linking a User to a specific House.
+/// The availability check ensures no two bookings overlap for the same house.
+model Booking {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  house      House    @relation(fields: [houseId], references: [id])
+  houseId    String
+  checkIn    DateTime
+  checkOut   DateTime
+  totalPrice Int      // Pre-calculated total: price * nights
+  status     Status   @default(PENDING) // Tracks the payment and fulfillment lifecycle
+  createdAt  DateTime @default(now())
+}
+
+enum Status {
+  PENDING
+  PAID
+  CANCELLED
+}
+

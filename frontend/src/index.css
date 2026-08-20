@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* 
+   Global theme configuration for Tailwind v4.
+   Adding serif font for elegant headings (Casa Del Sol vibe)
+*/
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+}
+
+html {
+  /* Enables smooth scrolling when clicking navigation anchors */
+  scroll-behavior: smooth;
+}
+
+body {
+  /* Warm earthy off-white background */
+  background-color: #FAF8F5;
+  /* Deep pine green for all text by default */
+  color: #2C4A3B;
+}
