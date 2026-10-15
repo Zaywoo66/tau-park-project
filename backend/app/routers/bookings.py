@@ -12,7 +12,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -65,6 +65,13 @@ async def create_booking(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"House '{body.houseId}' not found",
             )
+
+        # Serialize bookings for this house until the request transaction commits.
+        # Without this lock, two concurrent requests can both observe availability.
+        await db.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:house_id, 0))"),
+            {"house_id": body.houseId},
+        )
 
         # 2. Availability check — strict overlap detection via DB query
         is_available = await check_house_availability(
