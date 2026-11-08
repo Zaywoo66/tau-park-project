@@ -1,16 +1,53 @@
 #  TAU-PARK — Система бронирования глэмпинга
 
+## Run with Docker Compose
+
+The Compose stack starts PostgreSQL, the FastAPI API, and a separately served
+React catalog. The current React catalog displays local sample houses; its
+booking button is not wired to the API. Authentication and booking are available
+through the API at `/docs`.
+
+1. Copy `.env.example` to `.env`. Replace `POSTGRES_PASSWORD` with a URL-safe
+   password and `SECRET_KEY` with a long random value. Keep `.env` private.
+2. Run `docker compose config --quiet`, then `docker compose up --build --wait`.
+3. Open the catalog at <http://localhost:8080> and API docs at
+   <http://localhost:8000/docs>. If 8080 is occupied, set
+   `TAU_FRONTEND_PORT` to a free port in `.env` and use that port instead.
+4. `docker compose down` stops the stack and keeps the PostgreSQL volume.
+
+These screenshots were captured from the running local Compose stack. The
+catalog shows sample content; the API screenshot shows actual registered routes.
+
+![TAU-PARK React catalog landing page](docs/screenshots/catalog-desktop.png)
+![TAU-PARK FastAPI documentation with authentication and house routes](docs/screenshots/api-docs.png)
+
+## Backend tests
+
+CI runs the authentication and booking API tests against a disposable PostgreSQL
+database named `tau_park_test`. The tests refuse any other database name. To run
+them against a local Compose stack, create that database once with
+`docker compose exec db sh -c 'createdb -U "$POSTGRES_USER" tau_park_test'`, install
+`backend/requirements-test.txt` in a Python 3.12 virtual environment, set
+`TEST_DATABASE_URL` to
+`postgresql+asyncpg://<user>:<password>@127.0.0.1:5433/tau_park_test`
+using your `.env` values, and run `python -m pytest -q backend/tests`. If 5433
+is occupied, change `TAU_DB_PORT` in `.env` and use the same port in the test URL.
+The CI workflow also builds and starts the documented Compose stack and checks
+both HTTP endpoints.
+
+The manual backend/frontend development instructions below remain available.
+
 ![React](https://img.shields.io/badge/react-19.0-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/typescript-5.x-blue?logo=typescript)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Async-316192?logo=postgresql)
 
-**TAU-PARK** — это современная веб-система для управления бронированием домов (глэмпингов). Проект предоставляет удобный пользовательский интерфейс для поиска и аренды домиков, а также надежный API для управления бронированиями, пользователями и проверкой доступности в реальном времени.
+**TAU-PARK** — учебный проект для бронирования глэмпинг-домиков. Backend предоставляет API для пользователей, домов и бронирований. Отдельный React-каталог пока показывает локальные примерные данные; его кнопка бронирования ещё не подключена к API.
 
 ##  Ключевые возможности
 
 -  **Аутентификация и авторизация** — безопасная система входа на основе JWT (access & refresh токены).
--  **Каталог домиков** — просмотр доступных глэмпинг-домиков с детальной информацией.
+-  **Каталог домиков** — демонстрационный React-интерфейс с локальными данными.
 -  **Управление бронированиями** — создание, просмотр и отмена бронирований с проверкой доступности в реальном времени.
 -  **Валидация данных** — строгая типизация и валидация на уровне API (Pydantic).
 -  **Высокая производительность** — асинхронный бэкенд на FastAPI и SQLAlchemy.
